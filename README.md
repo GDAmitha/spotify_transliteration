@@ -36,4 +36,6 @@ Features:
 
 If you have any questions reach out to me @sincerely.dimple on social media, make an issue on github or email me at dimple [no space] amithag @ g[mail] [dot] com
 
+Also: I have a web app that doesn't require you to set anything up manually, but I need your spotify accounts to approve usage. If that's something you're interested in also let me know!
+
 
