@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spotify Lyrics Roller</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #F8D7E6;
+        --page-bg-image: none;
+        --panel-bg: #F4B5D4;
+        --panel-border: #F08FBF;
+        --panel-inner: rgba(255, 255, 255, 0.55);
+        --label-bg: #FFF3F8;
+        --label-border: #E88BBE;
+        --window-bg: rgba(255, 255, 255, 0.9);
+        --window-border: #E88BBE;
+        --reel-main: #F2A3C7;
+        --reel-accent: #FAD1E5;
+        --reel-border: #D27BAA;
+        --line-text: #7C4B63;
+        --line-active: #D12A7C;
+        --meta-text: #8C5B73;
+        --screw-bg: #D27BAA;
+        --screw-cross: rgba(255, 255, 255, 0.6);
+      }
+      [data-theme="dark"] {
+        --page-bg: #3F3E43;
+        --page-bg-image: url("IMG_0997%202.jpg");
+        --panel-bg: #C1ACCE;
+        --panel-border: #C1ACCE;
+        --panel-inner: rgba(255, 255, 255, 0.4);
+        --label-bg: #3F3E43;
+        --label-border: #6B5B6E;
+        --window-bg: #3F3E43;
+        --window-border: #B87E8E;
+        --reel-main: #C8909F;
+        --reel-accent: #E8A5B5;
+        --reel-border: #B87E8E;
+        /* --line-text: #6B5B6E; */
+        --line-text: #C1ACCE;
+        /* --line-active: #E8508B; */
+        /* --line-active: #B9CEAC; */
+        --line-active: #B87E8E;
+        --meta-text: #8B7089;
+        --screw-bg: #9D6B7A;
+        /* --screw-bg: #B9CEAC; */
+        --screw-cross: rgba(255, 255, 255, 0.5);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]) {
+          --page-bg: #3F3E43;
+          --page-bg-image: url("IMG_0997%202.jpg");
+          --panel-bg: #C1ACCE;
+          --panel-border: #C1ACCE;
+          --panel-inner: rgba(255, 255, 255, 0.4);
+          --label-bg: #3F3E43;
+          --label-border: #E8A5B5;
+          --window-bg: rgba(255, 255, 255, 0.85);
+          --window-border: #B87E8E;
+          --reel-main: #C8909F;
+          --reel-accent: #E8A5B5;
+          --reel-border: #B87E8E;
+          --line-text: #6B5B6E;
+          --line-active: #E8508B;
+          --meta-text: #8B7089;
+          --screw-bg: #9D6B7A;
+          --screw-cross: rgba(255, 255, 255, 0.5);
+        }
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: var(--page-bg);
+        background-image: var(--page-bg-image);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+      .bg-logo {
+        width: 100%;
+        max-width: 200px;
+        height: auto;
+        opacity: 0.95;
+        pointer-events: none;
+      }
+      .panel {
+        width: min(720px, 92vw);
+        text-align: center;
+        background: linear-gradient(135deg, var(--panel-bg) 0%, var(--panel-bg) 100%);
+        border: 4px solid var(--panel-border);
+        border-radius: 24px;
+        padding: 32px 28px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), inset 0 2px 8px rgba(255, 255, 255, 0.3);
+        position: relative;
+        z-index: 1;
+      }
+      .panel::before {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        border: 2px solid var(--panel-inner);
+        border-radius: 16px;
+        pointer-events: none;
+      }
+      .cassette-screws {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--screw-bg);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 2;
+      }
+      .cassette-screws::after {
+        content: '+';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--screw-cross);
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .screw-tl { top: 20px; left: 20px; }
+      .screw-tr { top: 20px; right: 20px; }
+      .screw-bl { bottom: 20px; left: 20px; }
+      .screw-br { bottom: 20px; right: 20px; }
+      .label-area {
+        background: var(--label-bg);
+        border-radius: 12px;
+        padding: 12px 8px;
+        margin: 0 auto 16px;
+        max-width: 30%;
+        border: 2px solid var(--label-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 3;
+      }
+      .label-area img {
+        max-width: 200px;
+        width: 100%;
+      }
+      .language-toggle {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        color: #5E3A52;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 10;
+      }
+      .language-toggle select {
+        background: transparent;
+        border: none;
+        font-size: 12px;
+        font-weight: 600;
+        color: inherit;
+        outline: none;
+        cursor: pointer;
+      }
+      [data-theme="dark"] .language-toggle {
+        background: rgba(0, 0, 0, 0.25);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #F7E6F0;
+      }
+      .tape-window {
+        background: var(--window-bg);
+        border: 3px solid var(--window-border);
+        border-radius: 16px;
+        padding: 20px;
+        margin: 20px auto 24px;
+        max-width: 90%;
+        min-height: 200px;
+        box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow-y: auto;
+        max-height: 300px;
+      }
+      .tape-reels {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 16px;
+        gap: 40px;
+        position: absolute;
+        top: 28px;
+        left: 0;
+        right: 0;
+        pointer-events: none;
+      }
+      .reel {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--reel-main) 30%, var(--reel-accent) 70%);
+        border: 3px solid var(--reel-border);
+        position: relative;
+        animation: spin 3s linear infinite;
+      }
+      .reel::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #3F3E43;
+        border: 2px solid var(--reel-border);
+      }
+      .reel::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .line {
+        font-size: 22px;
+        padding: 8px 0;
+        color: var(--line-text);
+        transition: color 0.2s ease, transform 0.2s ease;
+      }
+      .line.active {
+        color: var(--line-active);
+        font-weight: 600;
+        transform: scale(1.04);
+      }
+      .meta {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--meta-text);
+        font-weight: 500;
+      }
+      .theme-toggle {
+        position: absolute;
+        bottom: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5E3A52;
+        cursor: pointer;
+        z-index: 4;
+      }
+      [data-theme="dark"] .theme-toggle {
+        background: rgba(0, 0, 0, 0.25);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #F7E6F0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="panel">
+      <button class="theme-toggle" id="themeToggle" type="button">Light mode</button>
+      <div class="cassette-screws screw-tl"></div>
+      <div class="cassette-screws screw-tr"></div>
+      <div class="cassette-screws screw-bl"></div>
+      <div class="cassette-screws screw-br"></div>
+      
+      <div class="tape-reels">
+        <div class="reel"></div>
+        <div class="reel"></div>
+      </div>
+      
+      <div class="label-area">
+        <img class="bg-logo" id="labelImage" src="title_kpop_player.png" alt="Player label">
+      </div>
+      
+      <div class="tape-window">
+        <div id="lines"></div>
+      </div>
+      
+      <div class="meta" id="status">Waiting for playback...</div>
+    </div>
+    <div class="language-toggle">
+      <label for="languageToggle">Language</label>
+      <select id="languageToggle">
+        <option value="original">Original</option>
+        <option value="romanized">Romanized (Korean)</option>
+        <option value="telugu">Romanized (Telugu)</option>
+      </select>
+    </div>
+
+    <script>
+      const themeToggle = document.getElementById('themeToggle');
+      const storedTheme = localStorage.getItem('theme');
+      const languageToggle = document.getElementById('languageToggle');
+      const labelImage = document.getElementById('labelImage');
+      const storedLanguage = localStorage.getItem('lyricsLanguage') || 'original';
+      
+      const IMAGE_KOREAN = 'title_kpop_player.png';
+      const IMAGE_TELUGU = 'title_telugu_player.png';
+      
+      languageToggle.value = storedLanguage;
+
+      function applyTheme(theme) {
+        if (theme) {
+          document.documentElement.setAttribute('data-theme', theme);
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+        const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        themeToggle.textContent = isDark ? 'Light mode' : 'Dark mode';
+      }
+
+      applyTheme(storedTheme);
+      themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', next);
+        applyTheme(next);
+      });
+
+      function updateLogoImage() {
+        const mode = languageToggle.value;
+        if (mode === 'telugu') {
+          labelImage.src = IMAGE_TELUGU;
+        } else {
+          labelImage.src = IMAGE_KOREAN;
+        }
+      }
+
+      // Initial logo set
+      updateLogoImage();
+
+      languageToggle.addEventListener('change', () => {
+        localStorage.setItem('lyricsLanguage', languageToggle.value);
+        updateLogoImage();
+        fetchLyrics();
+      });
+
+      const linesEl = document.getElementById('lines');
+      const statusEl = document.getElementById('status');
+      const pollMs = 5000;
+
+      function renderLines(lines, activeOffset) {
+        linesEl.innerHTML = '';
+        if (!Array.isArray(lines) || lines.length === 0) {
+          return;
+        }
+        const mode = languageToggle.value;
+        lines.forEach((line, idx) => {
+          const div = document.createElement('div');
+          div.className = 'line';
+          if (mode === 'telugu') {
+            div.textContent = line.teluguTransliteratedWords || line.words || '';
+          } else if (mode === 'romanized') {
+            div.textContent = line.transliteratedWords || line.words || '';
+          } else {
+            div.textContent = line.words || '';
+          }
+          if (typeof activeOffset === 'number' && idx === activeOffset) {
+            div.classList.add('active');
+          }
+          linesEl.appendChild(div);
+        });
+      }
+
+      async function fetchLyrics() {
+        try {
+          const res = await fetch('index.php', { cache: 'no-store' });
+          const data = await res.json();
+          if (data.error) {
+            statusEl.textContent = data.message || 'No data.';
+            renderLines([]);
+            return;
+          }
+
+          const mode = languageToggle.value;
+          if (mode === 'telugu') {
+            labelImage.src = IMAGE_TELUGU;
+          } else if (mode === 'romanized') {
+            labelImage.src = IMAGE_KOREAN;
+          } else {
+            // original mode: use auto-detection from data
+            if (data.is_telugu) {
+              labelImage.src = IMAGE_TELUGU;
+            } else {
+              labelImage.src = IMAGE_KOREAN;
+            }
+          }
+
+          const lines = Array.isArray(data.lines) ? data.lines : [];
+          const activeIndex = data.active_index;
+          const windowStart = data.window_start;
+          const currentProgress = data.progress_ms;
+          statusEl.textContent = `progress_ms: ${currentProgress ?? 'n/a'}`;
+
+          let activeOffset = null;
+          if (typeof activeIndex === 'number' && typeof windowStart === 'number') {
+            activeOffset = activeIndex - windowStart;
+          }
+          renderLines(lines, activeOffset);
+        } catch (err) {
+          statusEl.textContent = 'Failed to fetch lyrics.';
+          renderLines([]);
+        }
+      }
+
+      fetchLyrics();
+      setInterval(fetchLyrics, pollMs);
+    </script>
+  </body>
+</html>
